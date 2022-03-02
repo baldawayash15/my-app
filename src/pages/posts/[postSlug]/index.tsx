@@ -1,64 +1,30 @@
-import { getNextStaticProps, is404 } from '@faustjs/next';
-import { client, Post } from 'client';
-import { Footer, Header, Hero } from 'components';
-import { GetStaticPropsContext } from 'next';
-import Head from 'next/head';
+import { getNextStaticProps } from "@faustjs/next";
+import { client } from "client";
+import { GetStaticPropsContext } from "next";
 
-export interface PostProps {
-  post: Post | Post['preview']['node'] | null | undefined;
-}
+export default function PostSingle() {
+  const { usePost, useQuery } = client;
 
-export function PostComponent({ post }: PostProps) {
-  const { useQuery } = client;
-  const generalSettings = useQuery().generalSettings;
-
+  const post = usePost();
   return (
     <>
-      <Header
-        title={generalSettings.title}
-        description={generalSettings.description}
-      />
-
-      <Head>
-        <title>
-          {post?.title()} - {generalSettings.title}
-        </title>
-      </Head>
-
-      <Hero
-        title={post?.title()}
-        bgImage={post?.featuredImage?.node?.sourceUrl()}
-      />
-
-      <main className="content content-single">
-        <div className="wrap">
-          <div dangerouslySetInnerHTML={{ __html: post?.content() ?? '' }} />
-        </div>
-      </main>
-
-      <Footer copyrightHolder={generalSettings.title} />
+      <h1>{useQuery()?.generalSettings.title}</h1>
+      <p>{useQuery()?.generalSettings.description}</p>
+      <h2>{post?.title()}</h2>
     </>
   );
-}
-
-export default function Page() {
-  const { usePost } = client;
-  const post = usePost();
-
-  return <PostComponent post={post} />;
-}
-
-export async function getStaticProps(context: GetStaticPropsContext) {
-  return getNextStaticProps(context, {
-    Page,
-    client,
-    notFound: await is404(context, { client }),
-  });
 }
 
 export function getStaticPaths() {
   return {
     paths: [],
-    fallback: 'blocking',
+    fallback: "blocking",
   };
+}
+
+export async function getStaticProps(context: GetStaticPropsContext) {
+  return getNextStaticProps(context, {
+    Page: PostSingle,
+    client,
+  });
 }

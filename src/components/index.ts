@@ -1,8 +1,4 @@
-import CTA from './CTA';
-import Footer from './Footer';
-import Header from './Header';
-import Hero from './Hero';
-import Posts from './Posts';
-import Pagination from './Pagination';
+import Post from "./post";
+import TeamMember from "./teamMember";
 
-export { CTA, Footer, Header, Hero, Posts, Pagination };
+export { Post, TeamMember };

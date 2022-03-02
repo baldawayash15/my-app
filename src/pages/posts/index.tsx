@@ -1,63 +1,53 @@
-import { getNextStaticProps } from '@faustjs/next';
-import { client, OrderEnum, PostObjectsConnectionOrderbyEnum } from 'client';
-import { Footer, Header, Pagination, Posts } from 'components';
-import { GetStaticPropsContext } from 'next';
-import Head from 'next/head';
-import { useRouter } from 'next/router';
-import React from 'react';
-import styles from 'scss/pages/posts.module.scss';
+import { getNextStaticProps } from "@faustjs/next";
+import { client } from "client";
+import { GetStaticPropsContext } from "next";
 
-const POSTS_PER_PAGE = 6;
+import { Post } from "components";
 
-export default function Page() {
-  const { query = {} } = useRouter();
-  const { postSlug, postCursor } = query;
+export interface MyPageProps {
+  title: string;
+}
+
+// const posts = [
+//   {
+//     id: 1,
+//     title:
+//       "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+//     content:
+//       "quia et suscipit suscipit recusandae consequuntur expedita et reprehenderit",
+//   },
+//   {
+//     id: 2,
+//     title: "qui est esse",
+//     content:
+//       "est rerum tempore vitae sequi sint nihil reprehenderit dolor beatae",
+//   },
+// ];
+
+export default function PostsPage({ title }: MyPageProps) {
   const { usePosts, useQuery } = client;
-  const generalSettings = useQuery().generalSettings;
-  const isBefore = postSlug === 'before';
-  const posts = usePosts({
-    after: !isBefore ? (postCursor as string) : undefined,
-    before: isBefore ? (postCursor as string) : undefined,
-    first: !isBefore ? POSTS_PER_PAGE : undefined,
-    last: isBefore ? POSTS_PER_PAGE : undefined,
-  });
-
-  if (useQuery().$state.isLoading) {
-    return null;
-  }
+  const posts = usePosts()?.nodes;
 
   return (
     <>
-      <Header
-        title={generalSettings.title}
-        description={generalSettings.description}
-      />
-
-      <Head>
-        <title>
-          {generalSettings.title} - {generalSettings.description}
-        </title>
-      </Head>
-
-      <main className="content content-index">
-        <Posts
-          posts={posts.nodes}
-          heading="Blog Posts"
-          headingLevel="h2"
-          postTitleLevel="h3"
-          id={styles.post_list}
-        />
-        <Pagination pageInfo={posts.pageInfo} basePath="/posts" />
-      </main>
-
-      <Footer copyrightHolder={generalSettings.title} />
+      <h1>{useQuery()?.generalSettings?.title}</h1>
+      <p>{useQuery()?.generalSettings?.description}</p>
+      <h2>{title}</h2>
+      {posts.map((post) => (
+        <Post key={post.id ?? ""} post={post} />
+      ))}
     </>
   );
 }
 
 export async function getStaticProps(context: GetStaticPropsContext) {
   return getNextStaticProps(context, {
-    Page,
+    Page: PostsPage,
     client,
+    // Custom Props (Optional)
+    props: {
+      title: "Recent Posts",
+    },
+    //revalidate: 60 (Optional 15 Minutes Default set by Faust.js)
   });
 }
